@@ -1,8 +1,8 @@
-// Import the functions you need from the SDKs you need
+// Import the Firebase modules you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCxRtBKKQQo0pJlGjMUwxO5R1anvDTR8kI",
     authDomain: "order-e261b.firebaseapp.com",
@@ -16,15 +16,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Referência ao nó de "pedidos"
+// Reference to the "pedidos" node
 const pedidosRef = ref(database, 'pedidos');
 
-// Função para carregar pedidos em tempo real
+// Function to load orders in real-time
 function carregarPedidos() {
     onValue(pedidosRef, (snapshot) => {
         const data = snapshot.val();
         const lista = document.getElementById('listaPedidos');
-        lista.innerHTML = '';  // Limpa a lista antes de adicionar novos pedidos
+        lista.innerHTML = '';  // Clear the list before adding new orders
 
         if (data) {
             Object.values(data).forEach((pedido, index) => {
@@ -37,19 +37,19 @@ function carregarPedidos() {
     });
 }
 
-// Função para adicionar um novo pedido
+// Function to add a new order
 function adicionarPedido(novoPedido) {
-    // Adiciona o novo pedido ao banco de dados
+    // Add the new order to the database
     push(pedidosRef, novoPedido);
 }
 
-// Evento de envio do formulário
+// Form submit event
 document.getElementById('formPedido').addEventListener('submit', function (event) {
     event.preventDefault();
     const novoPedido = document.getElementById('novoPedido').value;
     adicionarPedido(novoPedido);
-    document.getElementById('novoPedido').value = '';  // Limpa o campo após o envio
+    document.getElementById('novoPedido').value = '';  // Clear the input after submission
 });
 
-// Carregar pedidos ao iniciar
+// Load orders when starting
 carregarPedidos();
