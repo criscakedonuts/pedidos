@@ -1,55 +1,52 @@
-// Import the Firebase modules you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+// Importando a biblioteca do Supabase
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.js';
 
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCxRtBKKQQo0pJlGjMUwxO5R1anvDTR8kI",
-    authDomain: "order-e261b.firebaseapp.com",
-    projectId: "order-e261b",
-    storageBucket: "order-e261b.appspot.com",
-    messagingSenderId: "639561321343",
-    appId: "1:639561321343:web:9808195b35f2676d50284a"
+// Suas credenciais do Supabase
+const supabaseUrl = 'https://gesisobvosuebkqqhjpm.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdlc2lzb2J2b3N1ZWJrcXFoanBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgwMDAyNDAsImV4cCI6MjA0MzU3NjI0MH0.RV08BDWDQuCBUxY8DAlaPL5gCFsjg5MX_g4lKdpRzDU';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Função para adicionar um pedido
+const adicionarPedido = async (nome, descricao) => {
+    const { data, error } = await supabase
+        .from('pedidos')
+        .insert([{ nome, descricao }]);
+    
+    if (error) {
+        console.error('Erro ao adicionar pedido:', error);
+    } else {
+        console.log('Pedido adicionado:', data);
+        listarPedidos();
+    }
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+// Função para listar pedidos
+const listarPedidos = async () => {
+    const { data, error } = await supabase
+        .from('pedidos')
+        .select('*');
+    
+    const listaPedidos = document.getElementById('lista-pedidos');
+    listaPedidos.innerHTML = '';
+    
+    if (error) {
+        console.error('Erro ao listar pedidos:', error);
+    } else {
+        data.forEach(pedido => {
+            const li = document.createElement('li');
+            li.textContent = `${pedido.nome}: ${pedido.descricao} ( ${new Date(pedido.data).toLocaleString()} )`;
+            listaPedidos.appendChild(li);
+        });
+    }
+};
 
-// Reference to the "pedidos" node
-const pedidosRef = ref(database, 'pedidos');
-
-// Function to load orders in real-time
-function carregarPedidos() {
-    onValue(pedidosRef, (snapshot) => {
-        const data = snapshot.val();
-        const lista = document.getElementById('listaPedidos');
-        lista.innerHTML = '';  // Clear the list before adding new orders
-
-        if (data) {
-            Object.values(data).forEach((pedido, index) => {
-                const div = document.createElement('div');
-                div.className = 'pedido';
-                div.innerHTML = `Pedido ${index + 1}: ${pedido}`;
-                lista.appendChild(div);
-            });
-        }
-    });
-}
-
-// Function to add a new order
-function adicionarPedido(novoPedido) {
-    // Add the new order to the database
-    push(pedidosRef, novoPedido);
-}
-
-// Form submit event
-document.getElementById('formPedido').addEventListener('submit', function (event) {
+// Adicionando evento de submit ao formulário
+document.getElementById('pedido-form').addEventListener('submit', (event) => {
     event.preventDefault();
-    const novoPedido = document.getElementById('novoPedido').value;
-    adicionarPedido(novoPedido);
-    document.getElementById('novoPedido').value = '';  // Clear the input after submission
+    const nome = document.getElementById('nome').value;
+    const descricao = document.getElementById('descricao').value;
+    adicionarPedido(nome, descricao);
 });
 
-// Load orders when starting
-carregarPedidos();
+// Listar pedidos ao carregar a página
+listarPedidos();
